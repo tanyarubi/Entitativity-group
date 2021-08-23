@@ -1,0 +1,3 @@
+git remote add origin https://github.com/tanyarubi/MyExperiment.git
+git branch -M group
+git push -u origin main
