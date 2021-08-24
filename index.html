@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>My experiment</title>
+		<script src="jspsych-6.3.1/jspsych.js"></script>
+		<script src="jspsych-6.3.1/plugins/jspsych-html-keyboard-response.js"></script>
+	        <script src="jspsych-6.3.1/plugins/jspsych-instructions.js"></script>
+		<script src="jspsych-6.3.1/plugins/jspsych-html-slider-response.js"></script>
+		<script src="jspsych-6.3.1/plugins/jspsych-image-keyboard-response.js"></script>
+		<script src="jspsych-6.3.1/plugins/jspsych-preload.js"></script>
+	        <script src="jspsych-6.3.1/plugins/jspsych-animation.js"></script>
+	        <script src="jspsych-6.3.1/plugins/jspsych-fullscreen.js"></script>
+		<link href="jspsych-6.3.1/css/jspsych.css" rel="stylesheet" type="text/css">
+	    	<script src="stochasm.js"></script>
+		
+		
+    </head>
+    <body></body>
+	
+
+	
+	
+	<script>
+		var names = ['James S.',	'John J.',	'Robert W.',	'Michael B.',	'William J.',	'David M.',	'Richard D.',	'Joseph G.',	'Thomas R.',
+  'Charles W.',	'Christopher M.',	'Daniel A.',	'Matthew T.',	'Anthony T.',	'Donald H.',	'Mark M.',	'Paul M.',	'Steven J.',	'Andrew T.',
+    'Kenneth W.',	'Joshua L.',	'George L.',	'Kevin G.',	'Brian H.',	'Edward C.',	'Mary L.',	'Patricia R.',	'Jennifer W.',	'Linda P.',
+      'Elizabeth H.',	'Barbara Y.',	'Susan A.',	'Jessica S.',	'Sarah W.',	'Karen K.',	'Nancy S.',	'Margaret G.',	'Lisa B.',	'Betty A.',
+        'Dorothy N.',	'Sandra H.',	'Ashley R.',	'Kimberly C.',	'Donna M.',	'Emily R.',	'Michelle C.',	'Carol P.',	'Amanda E.',	'Melissa T.',	'Deborah T.',
+        'James S.',	'John J.',	'Robert W.',	'Michael B.',	'William J.',	'David M.',	'Richard D.',	'Joseph G.',	'Thomas R.',
+  'Charles W.',	'Christopher M.',	'Daniel A.',	'Matthew T.',	'Anthony T.',	'Donald H.',	'Mark M.',	'Paul M.',	'Steven J.',	'Andrew T.',
+    'Kenneth W.',	'Joshua L.',	'George L.',	'Kevin G.',	'Brian H.',	'Edward C.',	'Mary L.',	'Patricia R.',	'Jennifer W.',	'Linda P.',
+      'Elizabeth H.',	'Barbara Y.',	'Susan A.',	'Jessica S.',	'Sarah W.',	'Karen K.',	'Nancy S.',	'Margaret G.',	'Lisa B.',	'Betty A.',
+      	'Dorothy N.',	'Sandra H.',	'Ashley R.',	'Kimberly C.',	'Donna M.',	'Emily R.',	'Michelle C.',	'Carol P.',	'Amanda E.',	'Melissa T.',	'Deborah T.'];
+                
+		
+	//flow paramaters */ 
+	var Npractice = 1;
+	var Ntrials = 2;
+	var show_RT = 500; //milisec
+	
+	//pardigm parameters
+	var sigma = 20;
+	var sampleSize = 8;
+	var max_n = 100
+	var min_n = 0
+	var c = 30 //constant that bounds the scale for the samples' mean
+
+	// create timeline:
+	var timeline = [];
+	let ranNumAr = [];
+		
+	// generate a random subject ID with 15 characters
+	var subject_id = jsPsych.randomization.randomID(4);
+	
+	// pick a random condition for the subject at the start of the experiment
+	// record the condition assignment in the jsPsych data
+	var condition_assignment = jsPsych.randomization.sampleWithoutReplacement(['conditionIndifFirst', 'conditionGroupFirst'], 1)[0];
+
+
+	// this adds a property called 'subject' and a property called 'condition' to every trial
+	jsPsych.data.addProperties({
+	  subject: subject_id,
+	  condition: condition_assignment
+	});
+		
+ // capture info from Prolific
+  var subject_id = jsPsych.data.getURLVariable('PROLIFIC_PID');
+  var study_id = jsPsych.data.getURLVariable('STUDY_ID');
+  var session_id = jsPsych.data.getURLVariable('SESSION_ID');
+
+  jsPsych.data.addProperties({
+    subject_id: subject_id,
+    study_id: study_id,
+    session_id: session_id
+  });
+		
+		
+	timeline.push({
+  type: 'fullscreen',
+  fullscreen_mode: true
+});
+
+timeline.push({
+  type: 'html-keyboard-response',
+  stimulus: 'This experiment will be in fullscreen mode.'
+});
+	
+    /* define welcome message trial */
+    var welcome = {
+      type: "html-keyboard-response",
+      stimulus: "Welcome to the experiment. <br> <br>",
+	    prompt: "Press any key to begin."
+    };
+    timeline.push(welcome);
+
+    /* define instructions trials */
+    var instructions = {
+      type: "html-keyboard-response",
+      stimulus: `
+        <p>Thank you for taking part in our study!</p>
+		<p>In this study we will ask you to help us evaluate people’s average level of physical activity.</p>
+		<p>To do this, we had volunteers wear a fitness watch, which kept track of the number of minutes they engaged 
+		in aerobic physical activity (walking, jogging, dancing, intense house work) on a particular day. </p>
+
+        
+        <p>Press any key to continue.</p>
+       `
+    };
+	timeline.push(instructions);
+	
+	
+
+    var instruct_indiv_first = {
+      type: "html-keyboard-response",
+      stimulus: `
+        <p>We will show you data from the fitness watch of <b>one individual</b>, who wore it for eight consecutive days.
+	<p>The numbers you will be shows are the number of minutes that they engaged in aerobic physical activity every day. 
+	<p>These will be shown one after the other for a brief period of time.
+		<p>We will then ask you to evaluate the activity level of that individual.  
+        <p>Press any key to continue.</p>
+       `
+    };
+	timeline.push(instruct_indiv_first)
+		
+
+	var slider_indiv = {
+    type: 'html-slider-response',
+	stimulus: [`<p>What was this person's activity level?</p>`],
+    labels: ['0','100'],
+		require_movement: true,
+	}
+	
+	var data = jsPsych.data.get().filter({trial_type: 'html-slider-response'});
+	
+var gen = stochasm({kind: "integer",mean: this.mu, stdev: 14, min: 0, max: 100});	
+for (var j = 0; j < Ntrials; j++) { 
+	var mu = stochasm({kind: "integer", mean: 50, min: 20, max: 80});
+    ranNumAr[j] = gen.next(8);
+	var name = jsPsych.randomization.sampleWithReplacement(names, 1);
+	//create trial function
+    var node = {
+	     timeline:[
+	{type: "html-keyboard-response",
+       stimulus: name,
+	 choices: jsPsych.NO_KEYS,
+      trial_duration: 2000,
+	 prompt: '<p>Recorded the following minutes of aerobic activity:</p>',
+	 
+	},
+        {
+            type: 'html-keyboard-response',
+            stimulus: '+',
+            choices: jsPsych.NO_KEYS,
+            trial_duration: show_RT,
+				
+        },
+        {
+            type: 'html-keyboard-response',
+            stimulus: ranNumAr[j][0],
+            choices: jsPsych.NO_KEYS,
+            trial_duration: show_RT
+        },
+	      {
+            type: 'html-keyboard-response',
+            stimulus: ranNumAr[j][1],
+            choices: jsPsych.NO_KEYS,
+		trial_duration: show_RT
+	     },
+	      {
+            type: 'html-keyboard-response',
+            stimulus: ranNumAr[j][2],
+            choices: jsPsych.NO_KEYS,
+		trial_duration: show_RT
+	     },
+	    	      {
+            type: 'html-keyboard-response',
+            stimulus: ranNumAr[j][3],
+            choices: jsPsych.NO_KEYS,
+		trial_duration: show_RT
+	     },
+	    	      {
+            type: 'html-keyboard-response',
+            stimulus: ranNumAr[j][4],
+            choices: jsPsych.NO_KEYS,
+		trial_duration: show_RT
+	     },
+	    	      {
+            type: 'html-keyboard-response',
+            stimulus: ranNumAr[j][5],
+            choices: jsPsych.NO_KEYS,
+		trial_duration: show_RT
+	     },
+	    	      {
+            type: 'html-keyboard-response',
+            stimulus: ranNumAr[j][6],
+            choices: jsPsych.NO_KEYS,
+		trial_duration: show_RT
+	     },
+	    	      {
+            type: 'html-keyboard-response',
+            stimulus: ranNumAr[j][7],
+            choices: jsPsych.NO_KEYS,
+		trial_duration: show_RT,
+		data: { trial_count: j, mu: mu },
+		}],
+    }
+	    timeline.push(node);
+	timeline.push(slider_indiv);
+};
+
+timeline.push({
+        type: 'fullscreen',
+        fullscreen_mode: false
+    });		
+
+	/* start the experiment */
+	     
+    jsPsych.init({
+      timeline: timeline,
+	    on_interaction_data_update: function(data) {
+	    
+		jsPsych.data.addProperties({focus: data});
+		    
+	  },
+	  on_finish: function() {
+        	
+		  console.log(jsPsych.data.get().json());
+		  window.location = "https://app.prolific.co"
+    }
+    });
+
+    </script>
+</html>
